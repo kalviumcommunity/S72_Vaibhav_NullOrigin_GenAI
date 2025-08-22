@@ -1,4 +1,4 @@
-# AI World & Lore Generator
+# NullOrigin - AI World & Lore Generator
 
 An advanced AI-powered tool that generates rich, immersive fictional worlds and lore using Chain of Thought reasoning. Built with Node.js and modern AI technologies, this application helps writers, game developers, and worldbuilders create cohesive and detailed fantasy or sci-fi settings through structured AI prompting.
 
