@@ -20,7 +20,7 @@ An advanced AI-powered tool that generates rich, immersive fictional worlds and 
 ### Core Technologies
 - **Node.js**: Backend runtime for building fast, modular APIs
 - **Express.js**: Lightweight framework for routing and handling HTTP requests
-- **Ollama**: Local LLM engine to run models like Mistral, LLaMA 2, and Gemma
+- **Gemini**: Gemini models
 - **Axios**: For making HTTP requests to Ollama's local REST API
 - **dotenv**: For managing environment variables securely
 
