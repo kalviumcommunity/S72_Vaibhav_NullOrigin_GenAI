@@ -20,7 +20,9 @@ An advanced AI-powered tool that generates rich, immersive fictional worlds and 
 ### Core Technologies
 - **Node.js**: Backend runtime for building fast, modular APIs
 - **Express.js**: Lightweight framework for routing and handling HTTP requests
-- **Gemini**: Gemini models
+- **Gemini**: Gemini model
+-  CoT
+- **Axios**: For making HTTP requests to Gemini's local REST API
 - **Axios**: For making HTTP requests to Ollama's local REST API
 - **dotenv**: For managing environment variables securely
 

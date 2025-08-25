@@ -1,0 +1,45 @@
+{
+  "name": "s72_vaibhav_nullorigin_genai",
+  "version": "1.0.0",
+  "description": "An advanced AI-powered tool that generates rich, immersive fictional worlds and lore using Chain of Thought reasoning.",
+  "main": "src/app.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ai",
+    "world-building",
+    "storytelling",
+    "ollama",
+    "llm"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/genai": "^1.15.0",
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.6.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kalviumcommunity/S72_Vaibhav_NullOrigin_GenAI.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kalviumcommunity/S72_Vaibhav_NullOrigin_GenAI/issues"
+  },
+  "homepage": "https://github.com/kalviumcommunity/S72_Vaibhav_NullOrigin_GenAI#readme"
+}
