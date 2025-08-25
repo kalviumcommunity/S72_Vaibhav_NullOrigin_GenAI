@@ -16,6 +16,15 @@ let worlds = [];
 
 // ---- Prompt Builder ----
 function buildChainOfThoughtPrompt(biome, culture, tone) {
+  let toneInstruction = "";
+  if (tone.toLowerCase() === "mystical") {
+    toneInstruction = "Use poetic language and evoke ancient mysteries.";
+  } else if (tone.toLowerCase() === "grimdark") {
+    toneInstruction = "Emphasize brutality, decay, and moral ambiguity.";
+  } else if (tone.toLowerCase() === "hopeful") {
+    toneInstruction = "Highlight resilience, rebirth, and unity.";
+  }
+
   return `
 You are an AI worldbuilder. Your task is to generate a fictional world using step-by-step reasoning.
 
@@ -29,6 +38,9 @@ User Input:
 Biome: ${biome}
 Culture: ${culture}
 Tone: ${tone}
+
+Instructions:
+${toneInstruction}
 
 First, reason through each step in natural language.
 Then, return the final result in compact JSON format.
