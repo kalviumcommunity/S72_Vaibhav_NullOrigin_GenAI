@@ -14,6 +14,40 @@ const GEN_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
 // ---- In-memory World Store ----
 let worlds = [];
 
+// ---- Embedding Helpers ----
+function getClient() {
+  try {
+    return new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  } catch {
+    return null;
+  }
+}
+
+async function embedText(text, retries = 3) {
+  const client = getClient();
+  if (!client) return null;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const model = client.getGenerativeModel({ model: "text-embedding-004" });
+      const res = await model.embedContent(text);
+      const values = res?.embedding?.values;
+      if (Array.isArray(values)) return values;
+    } catch (err) {
+      if (err.response?.status === 429 && attempt < retries) {
+        const delay = 1000 * Math.pow(2, attempt); // 1s, 2s, 4s...
+        console.warn(`Rate limit hit. Retrying in ${delay / 1000}s... (attempt ${attempt + 1})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      console.error("Gemini embedding error:", err.message);
+      return null;
+    }
+  }
+
+  return null;
+}
+
 // ---- Prompt Builder ----
 function buildChainOfThoughtPrompt(biome, culture, tone) {
   let toneInstruction = "";
@@ -81,9 +115,9 @@ async function generateWorld(biome, culture, tone) {
 
     return parsed;
   } catch (err) {
-    console.error("Gemini error:", err.message);
+    console.error("Gemini generation error:", err.message);
     return {
-      reasoning: "", // Hide fallback message
+      reasoning: "",
       world: {
         summary: "A mystical desert world shaped by nomadic wisdom.",
         biome,
@@ -105,10 +139,20 @@ app.post("/generate-world", async (req, res) => {
   }
 
   const { reasoning, world } = await generateWorld(biome, culture, tone);
-  const newId = worlds.length ? Math.max(...worlds.map(w => w.id)) + 1 : 1;
-  const fullWorld = { id: newId, reasoning, ...world };
-  worlds.push(fullWorld);
 
+  const embeddingInput = `${world.summary} ${world.biome} ${world.culture} ${world.myth}`;
+  await new Promise(resolve => setTimeout(resolve, 1000)); // throttle
+  const embedding = await embedText(embeddingInput);
+
+  const newId = worlds.length ? Math.max(...worlds.map(w => w.id)) + 1 : 1;
+  const fullWorld = {
+    id: newId,
+    reasoning,
+    ...world,
+    embedding
+  };
+
+  worlds.push(fullWorld);
   res.status(201).json({ message: "World generated", world: fullWorld });
 });
 
