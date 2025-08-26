@@ -67,6 +67,18 @@ function cosineSimilarity(vecA, vecB) {
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
+function euclideanDistance(vecA, vecB) {
+  if (!vecA || !vecB || vecA.length !== vecB.length) return null;
+
+  let sum = 0;
+  for (let i = 0; i < vecA.length; i++) {
+    const diff = vecA[i] - vecB[i];
+    sum += diff * diff;
+  }
+
+  return Math.sqrt(sum);
+}
+
 // ---- Prompt Builder ----
 function buildChainOfThoughtPrompt(biome, culture, tone) {
   let toneInstruction = "";
@@ -237,6 +249,28 @@ app.post("/similar-worlds-cosine", async (req, res) => {
       similarity: cosineSimilarity(queryEmbedding, w.embedding)
     }))
     .sort((a, b) => b.similarity - a.similarity)
+    .slice(0, topN);
+
+  res.json({ matches: scored });
+});
+
+// POST /similar-worlds-l2
+app.post("/similar-worlds-l2", async (req, res) => {
+  const { query, topN = 3 } = req.body;
+  if (!query) return res.status(400).json({ error: "Query is required" });
+
+  const queryEmbedding = await embedText(query);
+  if (!queryEmbedding) return res.status(500).json({ error: "Failed to embed query" });
+
+  const scored = worlds
+    .filter(w => Array.isArray(w.embedding))
+    .map(w => ({
+      id: w.id,
+      summary: w.summary,
+      tone: w.tone,
+      distance: euclideanDistance(queryEmbedding, w.embedding)
+    }))
+    .sort((a, b) => a.distance - b.distance) // smaller = closer
     .slice(0, topN);
 
   res.json({ matches: scored });
