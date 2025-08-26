@@ -48,6 +48,12 @@ async function embedText(text, retries = 3) {
   return null;
 }
 
+// ---- Dot Product Similarity ----
+function dotProduct(vecA, vecB) {
+  if (!vecA || !vecB || vecA.length !== vecB.length) return null;
+  return vecA.reduce((sum, val, i) => sum + val * vecB[i], 0);
+}
+
 // ---- Prompt Builder ----
 function buildChainOfThoughtPrompt(biome, culture, tone) {
   let toneInstruction = "";
@@ -177,6 +183,28 @@ app.put("/update-world/:id", (req, res) => {
   if (myth) worlds[idx].myth = myth;
 
   res.json({ message: "World updated", before, after: worlds[idx] });
+});
+
+// POST /similar-worlds-dot
+app.post("/similar-worlds-dot", async (req, res) => {
+  const { query, topN = 3 } = req.body;
+  if (!query) return res.status(400).json({ error: "Query is required" });
+
+  const queryEmbedding = await embedText(query);
+  if (!queryEmbedding) return res.status(500).json({ error: "Failed to embed query" });
+
+  const scored = worlds
+    .filter(w => Array.isArray(w.embedding))
+    .map(w => ({
+      id: w.id,
+      summary: w.summary,
+      tone: w.tone,
+      score: dotProduct(queryEmbedding, w.embedding)
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, topN);
+
+  res.json({ matches: scored });
 });
 
 // ---- Start Server ----
