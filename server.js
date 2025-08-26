@@ -79,6 +79,26 @@ function euclideanDistance(vecA, vecB) {
   return Math.sqrt(sum);
 }
 
+// ---- Function Calling Schema ----
+const functionDeclarations = [
+  {
+    function: {
+      name: "generateWorld",
+      description: "Generate a fictional world based on biome, culture, and tone",
+      parameters: {
+        type: "object",
+        properties: {
+          biome: { type: "string", description: "The biome of the world" },
+          culture: { type: "string", description: "The dominant culture" },
+          tone: { type: "string", description: "The emotional tone or atmosphere" }
+        },
+        required: ["biome", "culture", "tone"]
+      }
+    }
+  }
+];
+
+
 // ---- Prompt Builder ----
 function buildChainOfThoughtPrompt(biome, culture, tone) {
   let toneInstruction = "";
@@ -185,6 +205,55 @@ app.post("/generate-world", async (req, res) => {
 
   worlds.push(fullWorld);
   res.status(201).json({ message: "World generated", world: fullWorld });
+});
+
+app.post("/ai-function-call", async (req, res) => {
+  const { message } = req.body;
+  if (!message) return res.status(400).json({ error: "Message is required" });
+
+  const model = genAI.getGenerativeModel({ model: GEN_MODEL });
+
+  try {
+    const result = await model.generateContent(
+      {
+        contents: [{ role: "user", parts: [{ text: message }] }]
+      },
+      {
+        functionDeclarations
+      }
+    );
+
+    const functionCall = result.response.functionCall;
+    if (!functionCall || functionCall.name !== "generateWorld") {
+      return res.status(400).json({ error: "No valid function call returned" });
+    }
+
+    const { biome, culture, tone } = functionCall.args;
+    const { reasoning, world } = await generateWorld(biome, culture, tone);
+
+    const embeddingInput = `${world.summary} ${world.biome} ${world.culture} ${world.myth}`;
+    const embedding = await embedText(embeddingInput);
+
+    const newId = worlds.length ? Math.max(...worlds.map(w => w.id)) + 1 : 1;
+    const fullWorld = {
+      id: newId,
+      reasoning,
+      ...world,
+      embedding
+    };
+
+    worlds.push(fullWorld);
+    res.json({
+      message: "Function call successful",
+      functionCall,
+      world: fullWorld
+    });
+  } catch (err) {
+    console.error("Function calling error:", err.message);
+    res.status(500).json({ error: "Function calling failed" });
+  }
+  console.log("Raw Gemini response:", result.response.text());
+console.log("Function call object:", result.response.functionCall);
 });
 
 // GET /worlds
