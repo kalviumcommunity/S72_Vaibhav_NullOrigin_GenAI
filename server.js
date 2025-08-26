@@ -35,7 +35,7 @@ async function embedText(text, retries = 3) {
       if (Array.isArray(values)) return values;
     } catch (err) {
       if (err.response?.status === 429 && attempt < retries) {
-        const delay = 1000 * Math.pow(2, attempt); // 1s, 2s, 4s...
+        const delay = 1000 * Math.pow(2, attempt);
         console.warn(`Rate limit hit. Retrying in ${delay / 1000}s... (attempt ${attempt + 1})`);
         await new Promise(resolve => setTimeout(resolve, delay));
         continue;
@@ -48,10 +48,23 @@ async function embedText(text, retries = 3) {
   return null;
 }
 
-// ---- Dot Product Similarity ----
+// ---- Similarity Functions ----
 function dotProduct(vecA, vecB) {
   if (!vecA || !vecB || vecA.length !== vecB.length) return null;
   return vecA.reduce((sum, val, i) => sum + val * vecB[i], 0);
+}
+
+function cosineSimilarity(vecA, vecB) {
+  if (!vecA || !vecB || vecA.length !== vecB.length) return null;
+
+  let dot = 0, normA = 0, normB = 0;
+  for (let i = 0; i < vecA.length; i++) {
+    dot += vecA[i] * vecB[i];
+    normA += vecA[i] * vecA[i];
+    normB += vecB[i] * vecB[i];
+  }
+
+  return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
 // ---- Prompt Builder ----
@@ -114,7 +127,7 @@ async function generateWorld(biome, culture, tone) {
     const result = await model.generateContent(prompt);
     const fullText = result.response.text();
 
-    console.log("Gemini full response:\n", fullText); // For debugging
+    console.log("Gemini full response:\n", fullText);
 
     const parsed = extractJsonAndReasoning(fullText);
     if (!parsed) throw new Error("Failed to parse Gemini response");
@@ -147,7 +160,7 @@ app.post("/generate-world", async (req, res) => {
   const { reasoning, world } = await generateWorld(biome, culture, tone);
 
   const embeddingInput = `${world.summary} ${world.biome} ${world.culture} ${world.myth}`;
-  await new Promise(resolve => setTimeout(resolve, 1000)); // throttle
+  await new Promise(resolve => setTimeout(resolve, 1000));
   const embedding = await embedText(embeddingInput);
 
   const newId = worlds.length ? Math.max(...worlds.map(w => w.id)) + 1 : 1;
@@ -202,6 +215,28 @@ app.post("/similar-worlds-dot", async (req, res) => {
       score: dotProduct(queryEmbedding, w.embedding)
     }))
     .sort((a, b) => b.score - a.score)
+    .slice(0, topN);
+
+  res.json({ matches: scored });
+});
+
+// POST /similar-worlds-cosine
+app.post("/similar-worlds-cosine", async (req, res) => {
+  const { query, topN = 3 } = req.body;
+  if (!query) return res.status(400).json({ error: "Query is required" });
+
+  const queryEmbedding = await embedText(query);
+  if (!queryEmbedding) return res.status(500).json({ error: "Failed to embed query" });
+
+  const scored = worlds
+    .filter(w => Array.isArray(w.embedding))
+    .map(w => ({
+      id: w.id,
+      summary: w.summary,
+      tone: w.tone,
+      similarity: cosineSimilarity(queryEmbedding, w.embedding)
+    }))
+    .sort((a, b) => b.similarity - a.similarity)
     .slice(0, topN);
 
   res.json({ matches: scored });
