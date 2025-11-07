@@ -1,6 +1,6 @@
 # NullOrigin - AI World & Lore Generator
 
-An advanced AI-powered tool that generates rich, immersive fictional worlds and lore using Chain of Thought reasoning. Built with Node.js and modern AI technologies, this application helps writers, game developers, and worldbuilders create cohesive and detailed fantasy or sci-fi settings through structured AI prompting.
+An advanced AI-powered tool that generates rich, immersive fictional worlds and lore using Chain of Thought reasoning. Built with python and modern AI technologies, this application helps writers, game developers, and worldbuilders create cohesive and detailed fantasy or sci-fi settings through structured AI prompting.
 
 ## Features
 
@@ -18,10 +18,8 @@ An advanced AI-powered tool that generates rich, immersive fictional worlds and 
 ## Tech Stack
 
 ### Core Technologies
-- **Node.js**: Backend runtime for building fast, modular APIs
-- **Express.js**: Lightweight framework for routing and handling HTTP requests
+- **Django.js**: Backend runtime for building fast, modular APIs, Lightweight framework for routing and handling HTTP requests
 - **Gemini**: Gemini model
--  CoT
 - **Axios**: For making HTTP requests to Gemini's local REST API
 - **Axios**: For making HTTP requests to Ollama's local REST API
 - **dotenv**: For managing environment variables securely
@@ -46,7 +44,7 @@ An advanced AI-powered tool that generates rich, immersive fictional worlds and 
 
 ### Prerequisites
     
-- Node.js 18+ and npm
+- Django
 - An OpenAI API key (or other LLM provider)
 
 ### Installation
@@ -85,27 +83,7 @@ An advanced AI-powered tool that generates rich, immersive fictional worlds and 
    RATE_LIMIT_MAX=100  # 100 requests per window
    ```
 
-### Running the Application
 
-```bash
-# Start the development server with hot-reload
-npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm start
-
-# Run tests
-npm test
-
-# Lint code
-npm run lint
-
-# Format code
-npm run format
-```
 
 ## Project Structure
 
@@ -152,13 +130,6 @@ npm run format
 
 ## Development
 
-### Available Scripts
-
-- `npm run dev` - Start development server with hot-reload
-- `npm run build` - Build the application
-- `npm start` - Start production server
-- `npm test` - Run tests
-- `npm run format` - Format code with Prettier
 
 ### Environment Variables
 
